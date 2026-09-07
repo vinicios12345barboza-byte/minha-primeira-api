@@ -1,0 +1,33 @@
+### Listar todos os jogos
+GET http://localhost:3000/jogos
+
+###
+
+### Buscar jogo por ID
+GET http://localhost:3000/jogos/1
+
+###
+
+### Criar um novo jogo
+POST http://localhost:3000/jogos
+Content-Type: application/json
+
+{
+    "id": 4,
+    "name": "God Of War"
+}
+
+###
+
+### Atualizar um jogo existente
+PUT http://localhost:3000/jogos/1
+Content-Type: application/json
+
+{
+    "name": "GTA SAN ANDREAS"
+}
+
+###
+
+### Deletar um jogo
+DELETE http://localhost:3000/jogos/1
