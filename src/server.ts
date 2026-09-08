@@ -1,65 +1,84 @@
-import express from "express";
-
-const app = express();
+import express, {type Request, type Response } from "express";
 import data from "./data.json" with { type: "json" };
 
-// verbos HTTP
-// GET - Rebecer dados de um Recource
-// POST - Enviar dados ou informações para serem processadas por um Recourse
-// PUT - Atualizar dados de um Recource
-// DELETE - Deletar um Recource
-
+const app = express();
 app.use(express.json());
 
-const jogos: { name: string; id: number }[] = [...data];
 
-app.get("/jogos", (req, res) => {
-  res.json(data);
+interface Jogo {
+  id: number;
+  name: string;
+}
+
+const jogos: Jogo[] = [...data];
+
+app.get("/jogos", (req: Request, res: Response) => {
+  return res.status(200).json(jogos);
 });
 
-app.get("/jogos/:id", (req, res) => {
-  const { id } = req.params; //pega os id
-
-  const jogo = data.find((jogo) => jogo.id === Number(id));
-
-  if (!jogo) return res.status(204).json();
-
-  res.json(jogo);
-}); // unico dado
-
-app.post("/jogos", (req, res) => {
-  const { name, id } = req.body;
-
-  const novoJogo = { name, id };
-  jogos.push(novoJogo);
-
-  //salvar
-  res.json({ name, id });
-});
-
-app.put("/jogos/:id", (req, res) => {
-  const { id } = req.params; //pega os id
-  const { name } = req.body;
-  const jogo = jogos.find((item) => item.id === Number(id));
+app.get("/jogos/:id", (req: Request, res: Response) => {
+  const id = Number(req.params.id);
+  const jogo = jogos.find((item) => item.id === id);
 
   if (!jogo) {
-    return res
-      .status(404)
-      .json({ mensagem: "Jogo não encontrado para atualização." });
+    return res.status(404).json({ mensagem: "Jogo não encontrado." });
   }
-
-  jogo.name = name;
 
   return res.status(200).json(jogo);
 });
 
-app.delete("/jogos/:id", (req, res) => {
-  const { id } = req.params;
-  const jogosFiltered = data.filter((jogo) => jogo.id != Number(id));
+app.post("/jogos", (req: Request, res: Response) => {
+  const { name, id } = req.body;
 
-  res.json(jogosFiltered);
+  if (!name || typeof id !== "number") {
+    return res.status(400).json({ mensagem: "Campos 'id' e 'name' são obrigatórios." });
+  }
+
+  const jogoExiste = jogos.some((item) => item.id === id);
+  if (jogoExiste) {
+    return res.status(409).json({ mensagem: "Já existe um jogo com este ID." });
+  }
+
+  const novoJogo: Jogo = { id, name };
+  jogos.push(novoJogo);
+
+  return res.status(201).json(novoJogo);
 });
+
+
+app.put("/jogos/:id", (req: Request, res: Response) => {
+  const id = Number(req.params.id);
+  const { name } = req.body;
+
+  if (!name) {
+    return res.status(400).json({ mensagem: "O campo 'name' é obrigatório." });
+  }
+
+  const jogo = jogos.find((item) => item.id === id);
+
+  if (!jogo) {
+    return res.status(404).json({ mensagem: "Jogo não encontrado para atualização." });
+  }
+
+  jogo.name = name;
+  return res.status(200).json(jogo);
+});
+
+
+app.delete("/jogos/:id", (req: Request, res: Response) => {
+  const id = Number(req.params.id);
+  const index = jogos.findIndex((item) => item.id === id);
+
+  if (index === -1) {
+    return res.status(404).json({ mensagem: "Jogo não encontrado." });
+  }
+
+  jogos.splice(index, 1); 
+
+  return res.status(204).send(); 
+
+});
+
 
 app.listen(3000, () => {
-  console.log(`Servidor rodando em: http://localhost:3000 `);
-});
+  console.log("Servidor rodando em: http://localhost:3000")});

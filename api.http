@@ -4,7 +4,7 @@ GET http://localhost:3000/jogos
 ###
 
 ### Buscar jogo por ID
-GET http://localhost:3000/jogos/1
+GET http://localhost:3000/jogos/2
 
 ###
 
